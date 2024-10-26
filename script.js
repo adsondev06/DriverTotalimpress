@@ -2,8 +2,8 @@ let dadosPlanilha = [];
 let historicoBuscas = []; 
 let nomeContagemTotal = {}; 
 let nomesBuscados = {};
-let nomesProcessados = new Set(); // Para rastrear quais nomes já tiveram a contagem reduzida
-let codigosProcessados = {}; // Objeto para rastrear códigos processados por driver
+let nomesProcessados = new Set();
+let codigosProcessados = {};
 
 // Função para ler a planilha
 document.getElementById("input-excel").addEventListener("change", (event) => {
@@ -41,27 +41,27 @@ document.getElementById("codigo").addEventListener("keydown", function(event) {
     }
 });
 
-// Função que conta ocorrências de nomes, considerando apenas uma ocorrência por nome completo
+
 function contarOcorrencias(planilha) {
     const contagem = {};
 
     planilha.forEach(item => {
-        const nomeDriver = item.driver.trim(); // Nome completo com sufixo
+        const nomeDriver = item.driver.trim(); 
 
         if (nomeDriver) {
-            const nomeBase = nomeDriver.split(" ")[0]; // Pega apenas o nome base (ex: "Kennedy")
+            const nomeBase = nomeDriver.split(" ")[0];
 
-            // Adiciona o nome base ao objeto de contagem se ainda não estiver presente
+
             if (!contagem[nomeBase]) {
-                contagem[nomeBase] = new Set(); // Usar um Set para evitar duplicatas
+                contagem[nomeBase] = new Set(); 
             }
-            contagem[nomeBase].add(nomeDriver); // Adiciona o nome com sufixo ao Set
+            contagem[nomeBase].add(nomeDriver);
         }
     });
 
-    // Transformar Set em contagem total
+
     for (const nomeBase in contagem) {
-        contagem[nomeBase] = contagem[nomeBase].size; // Substitui pelo tamanho do Set
+        contagem[nomeBase] = contagem[nomeBase].size; 
     }
 
     return contagem;
@@ -84,7 +84,7 @@ function exibirContagem(contagem) {
         contenedorFlex.appendChild(p);
     }
 
-    contagemDiv.appendChild(contenedorFlex); // Adiciona o contêiner flexível ao DOM
+    contagemDiv.appendChild(contenedorFlex); 
 }
 
 // Função para buscar pelo código
@@ -114,14 +114,13 @@ function buscarPorCodigo() {
         speakText(`${resultado.driver}`);
 
         // Chama a função de impressão
-        imprimirDriver(resultado.driver); // Chama a nova função de impressão
+        imprimirDriver(resultado.driver);
 
         // Pega o nome base do driver
-        const nomeBase = nomeDriver.split(" ")[0]; // Pega o nome base
+        const nomeBase = nomeDriver.split(" ")[0]; 
 
-        // Verifica se o código já foi processado para este driver
         if (!codigosProcessados[nomeBase]) {
-            codigosProcessados[nomeBase] = new Set(); // Inicializa um novo Set para o nome base
+            codigosProcessados[nomeBase] = new Set(); 
         }
 
         // Se o código não tiver sido processado, subtrai 1 da contagem
@@ -216,13 +215,11 @@ function atualizarHistorico() {
     });
 }
 
-// Função para filtrar o histórico de buscas e ordenar numericamente
 function filtrarHistorico() {
     const filtro = document.getElementById("filtro").value.toLowerCase();
     const listaHistorico = document.getElementById("lista-historico");
     listaHistorico.innerHTML = "";
 
-    // Filtra os registros que correspondem ao filtro
     const historicoFiltrado = historicoBuscas.filter(item => {
         return item.codigo.toString().toLowerCase().includes(filtro) ||
                item.driver.toLowerCase().includes(filtro);
@@ -243,7 +240,6 @@ function filtrarHistorico() {
     });
 }
 
-// Função para exportar o histórico para um arquivo XLSX
 function exportarHistorico() {
     const workbook = XLSX.utils.book_new();
     const worksheetData = [
@@ -265,5 +261,5 @@ document.getElementById("reiniciar-historico").addEventListener("click", functio
 
 // Mostra um alerta de confirmação ao sair
 window.onbeforeunload = function() {
-    return "Tem certeza que deseja sair?"; // Mostra um alerta de confirmação ao sair
+    return "Tem certeza que deseja sair?"; 
 };
