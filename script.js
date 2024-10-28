@@ -18,12 +18,12 @@ document.getElementById("input-excel").addEventListener("change", (event) => {
         dadosPlanilha = jsonData.slice(1).map(row => ({
             codigo: row[0] || "",
             driver: row[1] || "",
-            cliente: row[2] || "" // Adicionando o cliente da coluna C
+            cliente: row[2] || ""
         }));
 
         nomeContagemTotal = contarOcorrencias(dadosPlanilha);
-        exibirContagem(nomeContagemTotal); // Exibe contagem de nomes
-        atualizarHistorico(); // Atualiza o histórico para mostrar todos os nomes
+        exibirContagem(nomeContagemTotal);
+        atualizarHistorico();
     };
 
     reader.readAsArrayBuffer(file);
@@ -81,9 +81,7 @@ function exibirContagem(contagem) {
 
 // Função para buscar pelo código
 function buscarPorCodigo() {
-    let codigoInput = document.getElementById("codigo").value.trim();
-    codigoInput = codigoInput.replace(/^0+/, ''); // Remove os zeros à esquerda
-    const codigoConcat = `${codigoInput}-1`; // Concatena "-1"
+    const codigoInput = document.getElementById("codigo").value.trim();
     const resultadosDiv = document.getElementById("resultado");
     resultadosDiv.innerHTML = "";
 
@@ -92,7 +90,13 @@ function buscarPorCodigo() {
         return;
     }
 
-    const resultado = dadosPlanilha.find(item => item.codigo.toString().replace(/^0+/, '') === codigoConcat);
+    // Remove os zeros à esquerda
+    const codigoSemZeros = codigoInput.replace(/^0+/, '');
+
+    // Concatena '-1' apenas se houver zeros removidos
+    const codigoBusca = codigoSemZeros ? `${codigoSemZeros}-1` : codigoInput;
+
+    const resultado = dadosPlanilha.find(item => item.codigo.toString() === codigoBusca || item.codigo.toString() === codigoInput);
 
     if (resultado) {
         const nomeDriver = resultado.driver.trim();
@@ -101,8 +105,8 @@ function buscarPorCodigo() {
         historicoBuscas.unshift({
             codigo: resultado.codigo,
             driver: resultado.driver,
-            cliente: resultado.cliente, // Adicionando o cliente ao histórico
-            sucesso: true // Marca como pesquisa bem-sucedida
+            cliente: resultado.cliente,
+            sucesso: true
         });
         atualizarHistorico();
 
@@ -119,7 +123,6 @@ function buscarPorCodigo() {
 
     } else {
         resultadosDiv.innerHTML = "Nenhum resultado encontrado.";
-        // Não adiciona ao histórico em caso de falha na pesquisa
     }
 
     document.getElementById("codigo").value = "";
@@ -210,6 +213,7 @@ function atualizarHistorico() {
 // Função para mostrar/ocultar o cliente
 function toggleCliente(codigo) {
     const clienteDiv = document.getElementById(`cliente-${codigo}`);
+    
     if (clienteDiv) {
         clienteDiv.style.display = clienteDiv.style.display === "none" ? "block" : "none";
     }
@@ -227,7 +231,7 @@ function filtrarHistorico() {
     }
 
     const resultadosFiltrados = dadosPlanilha.filter(item =>
-        item.driver.toLowerCase().includes(filtro) || item.codigo.toString().replace(/^0+/, '').concat('-1').includes(filtro)
+        item.driver.toLowerCase().includes(filtro) || item.codigo.toString().toLowerCase().includes(filtro)
     );
 
     resultadosFiltrados.forEach(item => {
@@ -247,3 +251,10 @@ function filtrarHistorico() {
         listaHistorico.appendChild(li);
     });
 }
+
+// Adiciona o evento para o filtro
+document.getElementById("filtro").addEventListener("keyup", filtrarHistorico);
+
+window.onbeforeunload = function() {
+     return "Tem certeza que deseja sair? Seu histórico será perdido.";
+};
