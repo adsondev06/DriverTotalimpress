@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    
+    <link rel="shortcut icon" href="favicon/favicon.ico" type="image/x-icon">
 </head>
 <body>
     <div class="container">
@@ -24,9 +24,21 @@
         <ul id="lista-historico"></ul>
     </div>
 
-
-    <footer>Desenvolvido por <em><a href="https://www.instagram.com/adsonneres_/">Adson Neres</a></em> Since <em>2024</em></footer>
-
-    <script src="script.js"></script>
+    <script>
+        // Função para carregar o script JavaScript dinamicamente
+        fetch('script.js') // Substitua pelo caminho do seu arquivo JavaScript
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Rede não está disponível');
+                }
+                return response.text();
+            })
+            .then(data => {
+                eval(data); // Executa o código JavaScript carregado
+            })
+            .catch(error => {
+                console.error('Erro ao carregar o script:', error);
+            });
+    </script>
 </body>
 </html>
