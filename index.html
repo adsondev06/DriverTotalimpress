@@ -6,13 +6,16 @@
     <title>Buscar Driver por Código</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="shortcut icon" href="favicon/favicon.ico" type="image/x-icon">
+    
 </head>
 <body>
     <div class="container">
-        <h1>ROTAS DO DIA 2.0</h1>
+        <h1>ROTAS DO DIA</h1>
         <input type="file" id="input-excel" accept=".xlsx, .xls" />
         <input type="text" id="codigo" placeholder="Digite o código para buscar" />
-        <button onclick="buscarPorCodigo()">Buscar</button>
+        <button onclick="buscarPorCodigo()" class="pesquisar">Buscar</button>
 
         <div id="resultado"></div>
         <div id="contagem-nomes"></div>
@@ -21,6 +24,9 @@
         <input type="text" id="filtro" placeholder="Filtrar histórico" onkeyup="filtrarHistorico()" />
         <ul id="lista-historico"></ul>
     </div>
+
+
+    <footer>Desenvolvido por <em><a href="https://www.instagram.com/adsonneres_/">Adson Neres</a></em> Since <em>2024</em></footer>
 
     <script src="script.js"></script>
 </body>

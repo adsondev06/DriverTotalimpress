@@ -1,277 +1,7 @@
-// let dadosPlanilha = [];
-// let historicoBuscas = []; 
-// let nomeContagemTotal = {}; 
-// let nomesBuscados = {};
-// let nomesProcessados = new Set();
-// let codigosProcessados = {};
-
-// // Função para ler a planilha
-// document.getElementById("input-excel").addEventListener("change", (event) => {
-//     const file = event.target.files[0];
-//     const reader = new FileReader();
-
-//     reader.onload = (e) => {
-//         const data = new Uint8Array(e.target.result);
-//         const workbook = XLSX.read(data, { type: 'array' });
-
-//         const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-//         const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-
-//         dadosPlanilha = jsonData.slice(1).map(row => ({
-//             codigo: row[0], // Coluna A
-//             driver: row[1]  // Coluna B
-//         }));
-
-//         nomeContagemTotal = contarOcorrencias(dadosPlanilha);
-
-//         // Exibir os resultados na tela
-//         exibirContagem(nomeContagemTotal);
-
-//         console.log("Dados importados da planilha:", dadosPlanilha); // Para depuração
-//     };
-
-//     reader.readAsArrayBuffer(file);
-// });
-
-// // Adiciona um listener para o evento keydown no campo de entrada do código
-// document.getElementById("codigo").addEventListener("keydown", function(event) {
-//     if (event.key === "Enter") {
-//         event.preventDefault(); // Evita o comportamento padrão de envio do formulário
-//         buscarPorCodigo(); // Chama a função de busca
-//     }
-// });
-
-
-// function contarOcorrencias(planilha) {
-//     const contagem = {};
-
-//     planilha.forEach(item => {
-//         const nomeDriver = item.driver.trim(); 
-
-//         if (nomeDriver) {
-//             const nomeBase = nomeDriver.split(" ")[0];
-
-
-//             if (!contagem[nomeBase]) {
-//                 contagem[nomeBase] = new Set(); 
-//             }
-//             contagem[nomeBase].add(nomeDriver);
-//         }
-//     });
-
-
-//     for (const nomeBase in contagem) {
-//         contagem[nomeBase] = contagem[nomeBase].size; 
-//     }
-
-//     return contagem;
-// }
-
-// function exibirContagem(contagem) {
-//     const contagemDiv = document.getElementById("contagem-nomes");
-//     contagemDiv.innerHTML = ""; // Limpa resultados anteriores
-
-//     // Cria um contêiner flexível para os itens
-//     const contenedorFlex = document.createElement("div");
-//     contenedorFlex.classList.add("contagem-container");
-
-//     // Exibe todos os nomes e suas contagens
-//     for (const [nome, quantidade] of Object.entries(contagem)) {
-//         const p = document.createElement("p");
-//         p.classList.add("contagem-item"); // Adiciona uma classe para o estilo
-
-//         p.innerHTML = `<strong>${nome}</strong>: <span class="total">${quantidade}</span>`; 
-//         contenedorFlex.appendChild(p);
-//     }
-
-//     contagemDiv.appendChild(contenedorFlex); 
-// }
-
-// // Função para buscar pelo código
-// function buscarPorCodigo() {
-//     const codigoInput = document.getElementById("codigo").value.trim();
-//     const resultadosDiv = document.getElementById("resultado");
-//     resultadosDiv.innerHTML = ""; // Limpa resultados anteriores
-
-//     if (codigoInput === "") {
-//         resultadosDiv.innerHTML = "Por favor, insira um código para buscar.";
-//         return;
-//     }
-
-//     // Busca pelo código
-//     const resultado = dadosPlanilha.find(item => item.codigo.toString() === codigoInput);
-
-//     if (resultado) {
-//         const nomeDriver = resultado.driver.trim();
-//         resultadosDiv.innerHTML = `Código: <strong>${resultado.codigo}</strong> - Driver: <span class="highlight">${resultado.driver}</span>`;
-
-//         historicoBuscas.unshift({
-//             codigo: resultado.codigo,
-//             driver: resultado.driver
-//         });
-//         atualizarHistorico();
-
-//         speakText(`${resultado.driver}`);
-
-//         // Chama a função de impressão
-//         imprimirDriver(resultado.driver);
-
-//         // Pega o nome base do driver
-//         const nomeBase = nomeDriver.split(" ")[0]; 
-
-//         if (!codigosProcessados[nomeBase]) {
-//             codigosProcessados[nomeBase] = new Set(); 
-//         }
-
-//         // Se o código não tiver sido processado, subtrai 1 da contagem
-//         if (!codigosProcessados[nomeBase].has(resultado.codigo) && nomeContagemTotal[nomeBase] > 0) {
-//             nomeContagemTotal[nomeBase]--; // Subtrai 1 do total
-//             codigosProcessados[nomeBase].add(resultado.codigo); // Marca o código como processado
-//             exibirContagem(nomeContagemTotal); // Atualiza a exibição da contagem
-//         }
-
-//     } else {
-//         resultadosDiv.innerHTML = "Nenhum resultado encontrado.";
-//     }
-
-//     // Limpa o campo de busca e mantém o foco
-//     document.getElementById("codigo").value = "";
-//     document.getElementById("codigo").focus();
-// }
-
-// function imprimirDriver(driver) {
-//     // Criar um iframe para impressão
-//     const iframe = document.createElement('iframe');
-//     iframe.style.position = 'absolute';
-//     iframe.style.width = '0';
-//     iframe.style.height = '0';
-//     iframe.style.border = 'none';
-//     document.body.appendChild(iframe);
-
-//     // Criar o conteúdo do iframe
-//     const estiloEtiquetadora = `
-//         <style>
-//             body {
-//                 display: flex;
-//                 justify-content: center;
-//                 align-items: center;
-//                 height: 100vh;
-//                 margin: 0;
-//                 font-family: "Arial", sans-serif;
-//                 overflow: hidden; /* Impede rolagem */
-//                 background-color: white; /* Garante fundo branco */
-//             }
-//             h1 {
-//                 font-size: 30px; /* Tamanho grande para a etiqueta */
-//                 font-weight: bold;
-//                 text-align: center;
-//                 border: 2px solid black; /* Simula borda de etiqueta */
-//                 padding: 20px;
-//                 width: 60%; /* Controla o tamanho da etiqueta */
-//                 margin: 0; /* Remove margem para centrar */
-//             }
-//             @media print {
-//                 body {
-//                     width: 100%; /* Controla a largura da impressão */
-//                     height: 100%; /* Controla a altura da impressão */
-//                 }
-//             }
-//         </style>
-//     `;
-
-//     const conteudo = `${estiloEtiquetadora}<h1>${driver}</h1>`;
-//     const doc = iframe.contentWindow.document;
-//     doc.open();
-//     doc.write(conteudo);
-//     doc.close();
-
-//     // Chama a impressão
-//     iframe.contentWindow.focus();
-//     iframe.contentWindow.print();
-
-//     // Remove o iframe após a impressão
-//     iframe.parentNode.removeChild(iframe);
-// }
-
-// function speakText(text) {
-//     const synth = window.speechSynthesis;
-//     const utterance = new SpeechSynthesisUtterance(text);
-//     utterance.lang = 'pt-BR'; 
-//     utterance.rate = 2.0;
-//     utterance.pitch = 1.3; 
-
-//     // Fala o texto
-//     synth.speak(utterance);
-// }
-
-// function atualizarHistorico() {
-//     const listaHistorico = document.getElementById("lista-historico");
-//     listaHistorico.innerHTML = "";
-
-//     historicoBuscas.forEach(item => {
-//         const li = document.createElement("li");
-//         li.innerHTML = `Código: <strong>${item.codigo}</strong> - Driver: <span class="highlight">${item.driver}</span>`;
-//         listaHistorico.appendChild(li);
-//     });
-// }
-
-// function filtrarHistorico() {
-//     const filtro = document.getElementById("filtro").value.toLowerCase();
-//     const listaHistorico = document.getElementById("lista-historico");
-//     listaHistorico.innerHTML = "";
-
-//     const historicoFiltrado = historicoBuscas.filter(item => {
-//         return item.codigo.toString().toLowerCase().includes(filtro) ||
-//                item.driver.toLowerCase().includes(filtro);
-//     });
-
-//     // Ordena os resultados
-//     historicoFiltrado.sort((a, b) => {
-//         const codigoA = a.codigo.toString().toLowerCase();
-//         const codigoB = b.codigo.toString().toLowerCase();
-//         return codigoA.localeCompare(codigoB);
-//     });
-
-//     // Adiciona os itens filtrados à lista
-//     historicoFiltrado.forEach(item => {
-//         const li = document.createElement("li");
-//         li.innerHTML = `Código: <strong>${item.codigo}</strong> - Driver: <span class="highlight">${item.driver}</span>`;
-//         listaHistorico.appendChild(li);
-//     });
-// }
-
-// function exportarHistorico() {
-//     const workbook = XLSX.utils.book_new();
-//     const worksheetData = [
-//         ["Código", "Driver"],
-//         ...historicoBuscas.map(item => [item.codigo, item.driver])
-//     ];
-//     const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
-//     XLSX.utils.book_append_sheet(workbook, worksheet, "Historico");
-
-//     // Gera o arquivo XLSX
-//     XLSX.writeFile(workbook, "historico.xlsx");
-// }
-
-// // Botão para reiniciar o histórico de buscas
-// document.getElementById("reiniciar-historico").addEventListener("click", function() {
-//     historicoBuscas = [];
-//     atualizarHistorico();
-// });
-
-// // Mostra um alerta de confirmação ao sair
-// window.onbeforeunload = function() {
-//     return "Tem certeza que deseja sair?"; 
-// };
-
-
-
-
 let dadosPlanilha = [];
 let historicoBuscas = [];
 let nomeContagemTotal = {};
-let nomesProcessados = new Set(); // Para rastrear quais nomes já tiveram a contagem reduzida
-let codigosProcessados = {}; // Para garantir que cada código único seja processado apenas uma vez
+let codigosProcessados = {};
 
 // Função para ler a planilha
 document.getElementById("input-excel").addEventListener("change", (event) => {
@@ -285,18 +15,15 @@ document.getElementById("input-excel").addEventListener("change", (event) => {
         const worksheet = workbook.Sheets[workbook.SheetNames[0]];
         const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
-        // Verificação para evitar `undefined`
         dadosPlanilha = jsonData.slice(1).map(row => ({
-            codigo: row[0] || "", // Coluna A
-            driver: row[1] || ""  // Coluna B
+            codigo: row[0] || "",
+            driver: row[1] || "",
+            cliente: row[2] || "" // Adicionando o cliente da coluna C
         }));
 
         nomeContagemTotal = contarOcorrencias(dadosPlanilha);
-
-        // Exibir os resultados na tela
-        exibirContagem(nomeContagemTotal);
-
-        console.log("Dados importados da planilha:", dadosPlanilha); // Para depuração
+        exibirContagem(nomeContagemTotal); // Exibe contagem de nomes
+        atualizarHistorico(); // Atualiza o histórico para mostrar todos os nomes
     };
 
     reader.readAsArrayBuffer(file);
@@ -305,32 +32,30 @@ document.getElementById("input-excel").addEventListener("change", (event) => {
 // Adiciona um listener para o evento keydown no campo de entrada do código
 document.getElementById("codigo").addEventListener("keydown", function(event) {
     if (event.key === "Enter") {
-        event.preventDefault(); // Evita o comportamento padrão de envio do formulário
-        buscarPorCodigo(); // Chama a função de busca
+        event.preventDefault();
+        buscarPorCodigo();
     }
 });
 
-// Função que conta ocorrências de nomes, considerando apenas uma ocorrência por nome completo
+// Função que conta ocorrências de nomes
 function contarOcorrencias(planilha) {
     const contagem = {};
 
     planilha.forEach(item => {
-        const nomeDriver = item.driver.trim(); // Nome completo com sufixo
+        const nomeDriver = item.driver.trim();
 
         if (nomeDriver) {
-            const nomeBase = nomeDriver.split(" ")[0]; // Pega apenas o nome base (ex: "Kennedy")
+            const nomeBase = nomeDriver.split(" ")[0];
 
-            // Adiciona o nome base ao objeto de contagem se ainda não estiver presente
             if (!contagem[nomeBase]) {
-                contagem[nomeBase] = new Set(); // Usar um Set para evitar duplicatas
+                contagem[nomeBase] = new Set();
             }
-            contagem[nomeBase].add(nomeDriver); // Adiciona o nome com sufixo ao Set
+            contagem[nomeBase].add(nomeDriver);
         }
     });
 
-    // Transformar Set em contagem total
     for (const nomeBase in contagem) {
-        contagem[nomeBase] = contagem[nomeBase].size; // Substitui pelo tamanho do Set
+        contagem[nomeBase] = contagem[nomeBase].size;
     }
 
     return contagem;
@@ -338,73 +63,70 @@ function contarOcorrencias(planilha) {
 
 function exibirContagem(contagem) {
     const contagemDiv = document.getElementById("contagem-nomes");
-    contagemDiv.innerHTML = ""; // Limpa resultados anteriores
+    contagemDiv.innerHTML = "";
 
-    // Cria um contêiner flexível para os itens
     const contenedorFlex = document.createElement("div");
     contenedorFlex.classList.add("contagem-container");
 
-    // Exibe todos os nomes e suas contagens
     for (const [nome, quantidade] of Object.entries(contagem)) {
         const p = document.createElement("p");
-        p.classList.add("contagem-item"); // Adiciona uma classe para o estilo
+        p.classList.add("contagem-item");
 
-        p.innerHTML = `<strong>${nome}</strong>: <span class="total">${quantidade}</span>`; 
+        p.innerHTML = `<strong>${nome}</strong>: <span class="total">${quantidade}</span>`;
         contenedorFlex.appendChild(p);
     }
 
-    contagemDiv.appendChild(contenedorFlex); // Adiciona o contêiner flexível ao DOM
+    contagemDiv.appendChild(contenedorFlex);
 }
 
 // Função para buscar pelo código
 function buscarPorCodigo() {
-    const codigoInput = document.getElementById("codigo").value.trim();
+    let codigoInput = document.getElementById("codigo").value.trim();
+    codigoInput = codigoInput.replace(/^0+/, ''); // Remove os zeros à esquerda
+    const codigoConcat = `${codigoInput}-1`; // Concatena "-1"
     const resultadosDiv = document.getElementById("resultado");
-    resultadosDiv.innerHTML = ""; // Limpa resultados anteriores
+    resultadosDiv.innerHTML = "";
 
     if (codigoInput === "") {
         resultadosDiv.innerHTML = "Por favor, insira um código para buscar.";
         return;
     }
 
-    // Busca pelo código
-    const resultado = dadosPlanilha.find(item => item.codigo.toString() === codigoInput);
+    const resultado = dadosPlanilha.find(item => item.codigo.toString().replace(/^0+/, '') === codigoConcat);
 
     if (resultado) {
         const nomeDriver = resultado.driver.trim();
-        resultadosDiv.innerHTML = `Código: <strong>${resultado.codigo}</strong> - Driver: <span class="highlight">${resultado.driver}</span>`;
+        resultadosDiv.innerHTML = `Código: <strong style="color: green;">${resultado.codigo}</strong> - Driver: <span class="highlight">${resultado.driver}</span>`;
 
         historicoBuscas.unshift({
             codigo: resultado.codigo,
-            driver: resultado.driver
+            driver: resultado.driver,
+            cliente: resultado.cliente, // Adicionando o cliente ao histórico
+            sucesso: true // Marca como pesquisa bem-sucedida
         });
         atualizarHistorico();
 
         speakText(`${resultado.driver}`);
+        imprimirDriver(resultado.driver);
 
-        // Chama a função de impressão
-        imprimirDriver(resultado.driver); // Chama a nova função de impressão
+        const nomeBase = nomeDriver.split(" ")[0];
 
-        const nomeBase = nomeDriver.split(" ")[0]; // Pega o nome base do driver
-
-        // Verifica se o código já foi processado antes
         if (!codigosProcessados[codigoInput] && nomeContagemTotal[nomeBase] > 0) {
-            nomeContagemTotal[nomeBase]--; // Subtrai 1 do total
-            codigosProcessados[codigoInput] = true; // Marca o código como processado
-            exibirContagem(nomeContagemTotal); // Atualiza a exibição da contagem
+            nomeContagemTotal[nomeBase]--;
+            codigosProcessados[codigoInput] = true;
+            exibirContagem(nomeContagemTotal);
         }
 
     } else {
         resultadosDiv.innerHTML = "Nenhum resultado encontrado.";
+        // Não adiciona ao histórico em caso de falha na pesquisa
     }
 
-    // Limpa o campo de busca e mantém o foco
     document.getElementById("codigo").value = "";
     document.getElementById("codigo").focus();
 }
 
 function imprimirDriver(driver) {
-    // Criar um iframe para impressão
     const iframe = document.createElement('iframe');
     iframe.style.position = 'absolute';
     iframe.style.width = '0';
@@ -412,7 +134,6 @@ function imprimirDriver(driver) {
     iframe.style.border = 'none';
     document.body.appendChild(iframe);
 
-    // Criar o conteúdo do iframe
     const estiloEtiquetadora = `
         <style>
             body {
@@ -422,22 +143,22 @@ function imprimirDriver(driver) {
                 height: 100vh;
                 margin: 0;
                 font-family: "Arial", sans-serif;
-                overflow: hidden; /* Impede rolagem */
-                background-color: white; /* Garante fundo branco */
+                overflow: hidden;
+                background-color: white;
             }
             h1 {
-                font-size: 30px; /* Tamanho grande para a etiqueta */
+                font-size: 30px;
                 font-weight: bold;
                 text-align: center;
-                border: 2px solid black; /* Simula borda de etiqueta */
+                border: 2px solid black;
                 padding: 20px;
-                width: 60%; /* Controla o tamanho da etiqueta */
-                margin: 0; /* Remove margem para centrar */
+                width: 60%;
+                margin: 0;
             }
             @media print {
                 body {
-                    width: 100%; /* Controla a largura da impressão */
-                    height: 100%; /* Controla a altura da impressão */
+                    width: 100%;
+                    height: 100%;
                 }
             }
         </style>
@@ -449,11 +170,8 @@ function imprimirDriver(driver) {
     doc.write(conteudo);
     doc.close();
 
-    // Chama a impressão
     iframe.contentWindow.focus();
     iframe.contentWindow.print();
-
-    // Remove o iframe após a impressão
     iframe.parentNode.removeChild(iframe);
 }
 
@@ -462,9 +180,8 @@ function speakText(text) {
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'pt-BR'; 
     utterance.rate = 2.0;
-    utterance.pitch = 1.3; 
+    utterance.pitch = 1.3;
 
-    // Fala o texto
     synth.speak(utterance);
 }
 
@@ -474,32 +191,59 @@ function atualizarHistorico() {
 
     historicoBuscas.forEach(item => {
         const li = document.createElement("li");
-        li.innerHTML = `Código: <strong>${item.codigo}</strong> - Driver: <span class="highlight">${item.driver}</span>`;
+        li.classList.add("resultado-historico");
+
+        const backgroundColor = item.sucesso ? '#d0f0c0' : '#fff';
+        const textColor = item.sucesso ? '#000' : '#888';
+
+        li.innerHTML = `
+            <div style="background-color: ${backgroundColor}; color: ${textColor}; padding: 10px; border-radius: 5px;">
+                Código: <strong>${item.codigo}</strong> - Driver: <span class="highlight">${item.driver}</span>
+                <button class="btn-ver-cliente" onclick="toggleCliente('${item.codigo}')">Ver Cliente</button>
+                <div class="cliente" id="cliente-${item.codigo}" style="display: none;">Cliente: ${item.cliente}</div>
+            </div>
+        `;
         listaHistorico.appendChild(li);
     });
 }
 
-// Função para exportar o histórico para um arquivo XLSX
-function exportarHistorico() {
-    const workbook = XLSX.utils.book_new();
-    const worksheetData = [
-        ["Código", "Driver"],
-        ...historicoBuscas.map(item => [item.codigo, item.driver])
-    ];
-    const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Historico");
-
-    // Gera o arquivo XLSX
-    XLSX.writeFile(workbook, "historico.xlsx");
+// Função para mostrar/ocultar o cliente
+function toggleCliente(codigo) {
+    const clienteDiv = document.getElementById(`cliente-${codigo}`);
+    if (clienteDiv) {
+        clienteDiv.style.display = clienteDiv.style.display === "none" ? "block" : "none";
+    }
 }
 
-// Botão para reiniciar o histórico de buscas
-document.getElementById("reiniciar-historico").addEventListener("click", function() {
-    historicoBuscas = [];
-    atualizarHistorico();
-});
+// Função para filtrar histórico
+function filtrarHistorico() {
+    const filtro = document.getElementById("filtro").value.trim().toLowerCase();
+    const listaHistorico = document.getElementById("lista-historico");
+    listaHistorico.innerHTML = "";
 
-// Mostra um alerta de confirmação ao sair
-window.onbeforeunload = function() {
-    return "Tem certeza que deseja sair?";
-};
+    if (filtro === "") {
+        atualizarHistorico();
+        return;
+    }
+
+    const resultadosFiltrados = dadosPlanilha.filter(item =>
+        item.driver.toLowerCase().includes(filtro) || item.codigo.toString().replace(/^0+/, '').concat('-1').includes(filtro)
+    );
+
+    resultadosFiltrados.forEach(item => {
+        const li = document.createElement("li");
+        li.classList.add("resultado-historico");
+
+        const backgroundColor = historicoBuscas.some(h => h.codigo === item.codigo && h.sucesso) ? '#d0f0c0' : '#f8d7da';
+        const textColor = backgroundColor === '#d0f0c0' ? '#000' : '#888';
+
+        li.innerHTML = `
+            <div style="background-color: ${backgroundColor}; color: ${textColor}; padding: 10px; border-radius: 5px;">
+                Código: <strong>${item.codigo}</strong> - Driver: <span class="highlight">${item.driver}</span>
+                <button class="btn-ver-cliente" onclick="toggleCliente('${item.codigo}')">Ver Cliente</button>
+                <div class="cliente" id="cliente-${item.codigo}" style="display: none;">Cliente: ${item.cliente}</div>
+            </div>
+        `;
+        listaHistorico.appendChild(li);
+    });
+}
