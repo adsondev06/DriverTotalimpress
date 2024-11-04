@@ -7,14 +7,15 @@
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <link rel="shortcut icon" href="favicon/favicon.ico" type="image/x-icon">
 </head>
 <body>
     <div class="container">
-        <h1>EXPEDIR ROTAS</h1>
+        <h1>EXPEDIÇÃO DE ROTAS</h1>
         <input type="file" id="input-excel" accept=".xlsx, .xls" />
         <input type="text" id="codigo" placeholder="Digite o código para buscar" />
         <button onclick="buscarPorCodigo()" class="pesquisar">Buscar</button>
+
+        <button id="toggleImpressao" class="btn-toggle">Ativar Impressão</button>
 
         <div id="resultado"></div>
         <div id="contagem-nomes"></div>

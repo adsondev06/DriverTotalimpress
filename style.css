@@ -200,3 +200,23 @@ input[type="file"] {
 footer {
     text-align: center;
 }
+
+.btn-toggle {
+    background-color: #ffeb3b; /* Amarelo */
+    color: #000;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-top: 10px;
+}
+
+.btn-toggle.ativo {
+    background-color: #4caf50; /* Verde */
+    color: #fff;
+}
+
+.btn-toggle.inativo {
+    background-color: #f44336; /* Vermelho */
+    color: #000;
+}

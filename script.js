@@ -37,7 +37,7 @@
 //     }
 // });
 
-// // Função que conta ocorrências de nomes
+// // Função que conta ocorrências de regiões principais
 // function contarOcorrencias(planilha) {
 //     const contagem = {};
 
@@ -45,18 +45,18 @@
 //         const nomeDriver = item.driver.trim();
 
 //         if (nomeDriver) {
-//             const nomeBase = nomeDriver.split(" ")[0];
+//             // Extrai o nome base antes do '_'
+//             const nomeBase = nomeDriver.split('_')[0];
 
+//             // Inicializa o contador do nome base, se necessário
 //             if (!contagem[nomeBase]) {
-//                 contagem[nomeBase] = new Set();
+//                 contagem[nomeBase] = 0;
 //             }
-//             contagem[nomeBase].add(nomeDriver);
+
+//             // Incrementa o contador para o nome base
+//             contagem[nomeBase]++;
 //         }
 //     });
-
-//     for (const nomeBase in contagem) {
-//         contagem[nomeBase] = contagem[nomeBase].size;
-//     }
 
 //     return contagem;
 // }
@@ -113,7 +113,7 @@
 //         speakText(`${resultado.driver}`);
 //         imprimirDriver(resultado.driver);
 
-//         const nomeBase = nomeDriver.split(" ")[0];
+//         const nomeBase = nomeDriver.split('_')[0];
 
 //         if (!codigosProcessados[codigoInput] && nomeContagemTotal[nomeBase] > 0) {
 //             nomeContagemTotal[nomeBase]--;
@@ -261,13 +261,13 @@
 
 
 
-
 let dadosPlanilha = [];
 let historicoBuscas = [];
 let nomeContagemTotal = {};
 let codigosProcessados = {};
+let impressaoAtivada = false;
 
-// Função para ler a planilha
+// Event listener para o carregamento do arquivo Excel
 document.getElementById("input-excel").addEventListener("change", (event) => {
     const file = event.target.files[0];
     const reader = new FileReader();
@@ -275,14 +275,14 @@ document.getElementById("input-excel").addEventListener("change", (event) => {
     reader.onload = (e) => {
         const data = new Uint8Array(e.target.result);
         const workbook = XLSX.read(data, { type: 'array' });
-
         const worksheet = workbook.Sheets[workbook.SheetNames[0]];
         const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
         dadosPlanilha = jsonData.slice(1).map(row => ({
             codigo: row[0] || "",
             driver: row[1] || "",
-            cliente: row[2] || ""
+            cliente: row[2] || "",
+            dono: row[3] || ""
         }));
 
         nomeContagemTotal = contarOcorrencias(dadosPlanilha);
@@ -301,24 +301,29 @@ document.getElementById("codigo").addEventListener("keydown", function(event) {
     }
 });
 
+// Função auxiliar para remover sufixos e underscores
+function removerSufixo(nome) {
+    return nome.replace(/__+/g, '_') // Remove underscores duplos
+               .replace(/(_\d+|\s+\d+|_\d+)$/, '') // Remove sufixos numéricos
+               .trim(); // Remove espaços no início e no fim
+}
+
 // Função que conta ocorrências de regiões principais
 function contarOcorrencias(planilha) {
     const contagem = {};
 
     planilha.forEach(item => {
         const nomeDriver = item.driver.trim();
+        const nomeDono = item.dono.trim();
 
         if (nomeDriver) {
-            // Extrai o nome base antes do '_'
-            const nomeBase = nomeDriver.split('_')[0];
+            const nomeBase = removerSufixo(nomeDriver);
 
-            // Inicializa o contador do nome base, se necessário
             if (!contagem[nomeBase]) {
-                contagem[nomeBase] = 0;
+                contagem[nomeBase] = { quantidade: 0, dono: nomeDono };
             }
 
-            // Incrementa o contador para o nome base
-            contagem[nomeBase]++;
+            contagem[nomeBase].quantidade++;
         }
     });
 
@@ -332,11 +337,11 @@ function exibirContagem(contagem) {
     const contenedorFlex = document.createElement("div");
     contenedorFlex.classList.add("contagem-container");
 
-    for (const [nome, quantidade] of Object.entries(contagem)) {
+    for (const [nome, dados] of Object.entries(contagem)) {
         const p = document.createElement("p");
         p.classList.add("contagem-item");
-
-        p.innerHTML = `<strong>${nome}</strong>: <span class="total">${quantidade}</span>`;
+        // Adiciona o dono ao lado da quantidade com a letra pequena acima do número
+        p.innerHTML = `<strong>${nome}</strong>: <span class="total">${dados.quantidade}<sup style="font-size: 0.6em;"> ${dados.dono}</sup></span>`;
         contenedorFlex.appendChild(p);
     }
 
@@ -356,8 +361,6 @@ function buscarPorCodigo() {
 
     // Remove os zeros à esquerda
     const codigoSemZeros = codigoInput.replace(/^0+/, '');
-
-    // Concatena '-1' apenas se houver zeros removidos
     const codigoBusca = codigoSemZeros ? `${codigoSemZeros}-1` : codigoInput;
 
     const resultado = dadosPlanilha.find(item => item.codigo.toString() === codigoBusca || item.codigo.toString() === codigoInput);
@@ -374,25 +377,29 @@ function buscarPorCodigo() {
         });
         atualizarHistorico();
 
+        if (impressaoAtivada) {
+            imprimirDriver(resultado.driver);
+        }
+
         speakText(`${resultado.driver}`);
-        imprimirDriver(resultado.driver);
+        const nomeBase = removerSufixo(nomeDriver);
 
-        const nomeBase = nomeDriver.split('_')[0];
-
-        if (!codigosProcessados[codigoInput] && nomeContagemTotal[nomeBase] > 0) {
-            nomeContagemTotal[nomeBase]--;
-            codigosProcessados[codigoInput] = true;
-            exibirContagem(nomeContagemTotal);
+        // Verifica se o código ainda não foi processado e se existe quantidade a subtrair
+        if (!codigosProcessados[codigoInput] && nomeContagemTotal[nomeBase]?.quantidade > 0) {
+            nomeContagemTotal[nomeBase].quantidade--; // Subtrai a quantidade
+            codigosProcessados[codigoInput] = true; // Marca como processado
+            exibirContagem(nomeContagemTotal); // Atualiza a exibição
         }
 
     } else {
         resultadosDiv.innerHTML = "Nenhum resultado encontrado.";
     }
 
-    document.getElementById("codigo").value = "";
-    document.getElementById("codigo").focus();
+    document.getElementById("codigo").value = ""; // Limpa o campo de entrada
+    document.getElementById("codigo").focus(); // Foca no campo de entrada
 }
 
+// Função para imprimir driver
 function imprimirDriver(driver) {
     const iframe = document.createElement('iframe');
     iframe.style.position = 'absolute';
@@ -442,16 +449,18 @@ function imprimirDriver(driver) {
     iframe.parentNode.removeChild(iframe);
 }
 
+// Função para falar o texto
 function speakText(text) {
     const synth = window.speechSynthesis;
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'pt-BR'; 
+    utterance.lang = 'pt-BR';
     utterance.rate = 2.0;
     utterance.pitch = 1.3;
 
     synth.speak(utterance);
 }
 
+// Função para atualizar histórico
 function atualizarHistorico() {
     const listaHistorico = document.getElementById("lista-historico");
     listaHistorico.innerHTML = "";
@@ -516,9 +525,21 @@ function filtrarHistorico() {
     });
 }
 
-// Adiciona o evento para o filtro
-document.getElementById("filtro").addEventListener("keyup", filtrarHistorico);
+ function toggleImpressao() {
+    impressaoAtivada = !impressaoAtivada;
+     const btnImpressao = document.getElementById("toggleImpressao"); 
 
-window.onbeforeunload = function() {
-     return "Tem certeza que deseja sair? Seu histórico será perdido.";
-};
+    if (impressaoAtivada) {
+        btnImpressao.textContent = "Impressão Ativada";
+        btnImpressao.classList.remove("inativo");
+        btnImpressao.classList.add("ativo");
+    } else {
+        btnImpressao.textContent = "Impressão Desativada";
+        btnImpressao.classList.remove("ativo");
+        btnImpressao.classList.add("inativo");
+    }
+ }
+
+
+document.getElementById("toggleImpressao").classList.add("btn-toggle");
+document.getElementById("toggleImpressao").addEventListener("click", toggleImpressao);
